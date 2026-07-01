@@ -1,0 +1,152 @@
+{
+	"info": {
+		"_postman_id": "d4e5f6g7-h8i9-0123-jklm-no4567890123",
+		"name": "Product Service",
+		"description": "Collection for testing the product-service endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All Products",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/products",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"products"
+					]
+				},
+				"description": "Get all products"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Product by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/products/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"products",
+						"1"
+					]
+				},
+				"description": "Get a product by its ID"
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Categories",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/products/categories",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"products",
+						"categories"
+					]
+				},
+				"description": "Get all product categories"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Products by Category",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/products/category/electronics",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"products",
+						"category",
+						"electronics"
+					]
+				},
+				"description": "Get products by category"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Product - Not Found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/products/999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"products",
+						"999"
+					]
+				},
+				"description": "Try to get a product that doesn't exist"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Products by Category - Not Found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/products/category/nonexistent",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"products",
+						"category",
+						"nonexistent"
+					]
+				},
+				"description": "Try to get products from a category that doesn't exist"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8087",
+			"type": "string"
+		}
+	]
+}
