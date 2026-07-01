@@ -1,0 +1,210 @@
+{
+	"info": {
+		"_postman_id": "b2c3d4e5-f6g7-8901-hijk-lm2345678901",
+		"name": "Order Service",
+		"description": "Collection for testing the order-service endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Order",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"customerId\": \"customer123\",\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    },\n    {\n      \"productId\": 2,\n      \"quantity\": 1\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/orders",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"orders"
+					]
+				},
+				"description": "Create a new order"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Order by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/orders/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"orders",
+						"1"
+					]
+				},
+				"description": "Get an order by its ID"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order - Missing Customer ID",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"customerId\": \"\",\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/orders",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"orders"
+					]
+				},
+				"description": "Try to create an order with a missing customer ID"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order - Empty Items",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"customerId\": \"customer123\",\n  \"items\": []\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/orders",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"orders"
+					]
+				},
+				"description": "Try to create an order with an empty items list"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order - Missing Product ID",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"customerId\": \"customer123\",\n  \"items\": [\n    {\n      \"quantity\": 2\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/orders",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"orders"
+					]
+				},
+				"description": "Try to create an order with a missing product ID"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order - Missing Quantity",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"customerId\": \"customer123\",\n  \"items\": [\n    {\n      \"productId\": 1\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/orders",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"orders"
+					]
+				},
+				"description": "Try to create an order with a missing quantity"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Order - Not Found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/orders/999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"orders",
+						"999"
+					]
+				},
+				"description": "Try to get an order that doesn't exist"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8085",
+			"type": "string"
+		}
+	]
+}
