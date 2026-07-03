@@ -19,7 +19,6 @@ import com.org.orderservice.model.Order;
 import com.org.orderservice.model.OrderItem;
 import com.org.orderservice.model.PaymentStatus;
 import com.org.orderservice.repository.OrderRepository;
-import com.org.orderservice.security.UserIdentityResolver;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,27 +33,21 @@ import java.util.stream.Collectors;
 public class OrderService {
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
     private final OrderRepository orderRepository;
-    private final UserIdentityResolver userIdentityResolver;
     private final ProductClient productClient;
     private final PaymentClient paymentClient;
 
     public OrderService(
             OrderRepository orderRepository,
-            UserIdentityResolver userIdentityResolver,
             ProductClient productClient,
             PaymentClient paymentClient
     ) {
         this.orderRepository = orderRepository;
-        this.userIdentityResolver = userIdentityResolver;
         this.productClient = productClient;
         this.paymentClient = paymentClient;
     }
 
-    public OrderResponse createOrder(CreateOrderRequest request) {
-        String userIdentity = userIdentityResolver.resolveUserIdentity();
-        if (userIdentity == null || userIdentity.isBlank() || "unknown".equalsIgnoreCase(userIdentity)) {
-            throw new UnauthorizedException("Authentication token is required to create order");
-        }
+    public OrderResponse createOrder(CreateOrderRequest request, String userIdentity) {
+        requireUserIdentity(userIdentity);
         log.info("Create order requested by user: {}", userIdentity);
 
         Order order = new Order();
@@ -85,16 +78,16 @@ public class OrderService {
         return mapToResponse(saved);
     }
 
-    public OrderResponse getOrderById(Long id) {
-        String userIdentity = userIdentityResolver.resolveUserIdentity();
+    public OrderResponse getOrderById(Long id, String userIdentity) {
+        requireUserIdentity(userIdentity);
         return orderRepository.findById(id)
                 .filter(order -> userIdentity.equals(order.getCustomerId()))
                 .map(this::mapToResponse)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + id));
     }
 
-    public List<OrderResponse> getAllOrders() {
-        String userIdentity = userIdentityResolver.resolveUserIdentity();
+    public List<OrderResponse> getAllOrders(String userIdentity) {
+        requireUserIdentity(userIdentity);
         log.info("Fetch all orders requested by user: {}", userIdentity);
 
         return orderRepository.findByCustomerId(userIdentity).stream()
@@ -102,8 +95,8 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    public OrderResponse checkoutOrder(Long id, CheckoutOrderRequest request) {
-        String userIdentity = userIdentityResolver.resolveUserIdentity();
+    public OrderResponse checkoutOrder(Long id, CheckoutOrderRequest request, String userIdentity) {
+        requireUserIdentity(userIdentity);
         Order order = orderRepository.findById(id)
                 .filter(existingOrder -> userIdentity.equals(existingOrder.getCustomerId()))
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + id));
@@ -163,6 +156,12 @@ public class OrderService {
             return paymentClient.processPayment(request);
         } catch (FeignException ex) {
             throw new PaymentServiceUnavailableException("Unable to process payment", ex);
+        }
+    }
+
+    private void requireUserIdentity(String userIdentity) {
+        if (userIdentity == null || userIdentity.isBlank()) {
+            throw new UnauthorizedException("Authenticated user identity is required");
         }
     }
 }

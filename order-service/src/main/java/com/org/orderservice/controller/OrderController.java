@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -22,23 +23,26 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody @Valid CreateOrderRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(request));
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody @Valid CreateOrderRequest request,
+                                                     Principal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(orderService.createOrder(request, principal.getName()));
     }
 
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
+    public ResponseEntity<List<OrderResponse>> getAllOrders(Principal principal) {
+        return ResponseEntity.ok(orderService.getAllOrders(principal.getName()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
-        return ResponseEntity.ok(orderService.getOrderById(id));
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id, Principal principal) {
+        return ResponseEntity.ok(orderService.getOrderById(id, principal.getName()));
     }
 
     @PostMapping("/{id}/checkout")
     public ResponseEntity<OrderResponse> checkoutOrder(@PathVariable Long id,
-                                                       @RequestBody @Valid CheckoutOrderRequest request) {
-        return ResponseEntity.ok(orderService.checkoutOrder(id, request));
+                                                       @RequestBody @Valid CheckoutOrderRequest request,
+                                                       Principal principal) {
+        return ResponseEntity.ok(orderService.checkoutOrder(id, request, principal.getName()));
     }
 }
