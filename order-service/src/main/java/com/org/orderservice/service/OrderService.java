@@ -8,6 +8,9 @@ import com.org.orderservice.exception.OrderNotFoundException;
 import com.org.orderservice.model.Order;
 import com.org.orderservice.model.OrderItem;
 import com.org.orderservice.repository.OrderRepository;
+import com.org.orderservice.security.UserIdentityResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,15 +20,21 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
     private final OrderRepository orderRepository;
+    private final UserIdentityResolver userIdentityResolver;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, UserIdentityResolver userIdentityResolver) {
         this.orderRepository = orderRepository;
+        this.userIdentityResolver = userIdentityResolver;
     }
 
     public OrderResponse createOrder(CreateOrderRequest request) {
+        String userIdentity = userIdentityResolver.resolveUserIdentity();
+        log.info("Create order requested by user: {}", userIdentity);
+
         Order order = new Order();
-        order.setCustomerId(request.getCustomerId());
+        order.setCustomerId(userIdentity);
         order.setCreatedAt(LocalDateTime.now());
 
         List<OrderItem> items = request.getItems().stream().map(req -> {
