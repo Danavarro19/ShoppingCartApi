@@ -1,0 +1,82 @@
+{
+  "info": {
+    "_postman_id": "faafd220-c1da-46c2-9135-c4323a57d788",
+    "name": "Product Service",
+    "description": "Collection for product-service endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All Products",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{productBaseUrl}}/products",
+          "host": [
+            "{{productBaseUrl}}"
+          ],
+          "path": [
+            "products"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Product By Id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{productBaseUrl}}/products/1",
+          "host": [
+            "{{productBaseUrl}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Categories",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{productBaseUrl}}/products/categories",
+          "host": [
+            "{{productBaseUrl}}"
+          ],
+          "path": [
+            "products",
+            "categories"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Products By Category",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{productBaseUrl}}/products/category/electronics",
+          "host": [
+            "{{productBaseUrl}}"
+          ],
+          "path": [
+            "products",
+            "category",
+            "electronics"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

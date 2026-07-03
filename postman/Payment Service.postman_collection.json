@@ -1,0 +1,54 @@
+{
+  "info": {
+    "_postman_id": "6590d6eb-a387-44e6-8010-dbc23db7e3c0",
+    "name": "Payment Service",
+    "description": "Collection for payment-service endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Process Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"amount\": 100.50,\n  \"method\": \"CREDIT_CARD\"\n}"
+        },
+        "url": {
+          "raw": "{{paymentBaseUrl}}/payments",
+          "host": [
+            "{{paymentBaseUrl}}"
+          ],
+          "path": [
+            "payments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Payment By Order Id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{paymentBaseUrl}}/payments/{{orderId}}",
+          "host": [
+            "{{paymentBaseUrl}}"
+          ],
+          "path": [
+            "payments",
+            "{{orderId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

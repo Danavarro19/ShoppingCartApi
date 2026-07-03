@@ -1,0 +1,129 @@
+{
+  "info": {
+    "_postman_id": "a7df8fc1-3f85-4bd0-8bf1-99413f8fca43",
+    "name": "Order Service",
+    "description": "Collection for order-service endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Create Order",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "const orderId = json.id || json.orderId;",
+              "",
+              "pm.test(\"Create order returns ID\", function () {",
+              "  pm.expect(orderId).to.exist;",
+              "});",
+              "",
+              "if (orderId) {",
+              "  pm.environment.set(\"orderId\", orderId);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    },\n    {\n      \"productId\": 2,\n      \"quantity\": 1\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{orderBaseUrl}}/orders",
+          "host": [
+            "{{orderBaseUrl}}"
+          ],
+          "path": [
+            "orders"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Orders",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{orderBaseUrl}}/orders",
+          "host": [
+            "{{orderBaseUrl}}"
+          ],
+          "path": [
+            "orders"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Order By Id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{orderBaseUrl}}/orders/{{orderId}}",
+          "host": [
+            "{{orderBaseUrl}}"
+          ],
+          "path": [
+            "orders",
+            "{{orderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Checkout Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"paymentMethod\": \"CREDIT_CARD\"\n}"
+        },
+        "url": {
+          "raw": "{{orderBaseUrl}}/orders/{{orderId}}/checkout",
+          "host": [
+            "{{orderBaseUrl}}"
+          ],
+          "path": [
+            "orders",
+            "{{orderId}}",
+            "checkout"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
