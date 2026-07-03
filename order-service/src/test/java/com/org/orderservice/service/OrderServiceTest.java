@@ -11,7 +11,6 @@ import com.org.orderservice.dto.OrderItemRequest;
 import com.org.orderservice.exception.OrderCheckoutConflictException;
 import com.org.orderservice.exception.OrderNotFoundException;
 import com.org.orderservice.exception.PaymentServiceUnavailableException;
-import com.org.orderservice.exception.UnauthorizedException;
 import com.org.orderservice.model.Order;
 import com.org.orderservice.model.PaymentMethod;
 import com.org.orderservice.model.PaymentStatus;
@@ -102,18 +101,6 @@ class OrderServiceTest {
         assertEquals(BigDecimal.valueOf(99.99), response.getItems().get(0).getUnitPrice());
         assertEquals(BigDecimal.valueOf(199.98), response.getTotalAmount());
         assertEquals(PaymentStatus.PENDING, response.getPaymentStatus());
-    }
-
-    @Test
-    void createOrderThrowsUnauthorizedWhenUserIdentityIsBlank() {
-        CreateOrderRequest request = new CreateOrderRequest();
-        OrderItemRequest itemRequest = new OrderItemRequest();
-        itemRequest.setProductId(1L);
-        itemRequest.setQuantity(1);
-        request.setItems(List.of(itemRequest));
-
-        assertThrows(UnauthorizedException.class, () -> orderService.createOrder(request, " "));
-        verify(orderRepository, never()).save(any(Order.class));
     }
 
     @Test

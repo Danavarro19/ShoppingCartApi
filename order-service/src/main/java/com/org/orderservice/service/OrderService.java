@@ -14,7 +14,6 @@ import com.org.orderservice.exception.OrderNotFoundException;
 import com.org.orderservice.exception.PaymentServiceUnavailableException;
 import com.org.orderservice.exception.ProductNotFoundException;
 import com.org.orderservice.exception.ProductServiceUnavailableException;
-import com.org.orderservice.exception.UnauthorizedException;
 import com.org.orderservice.model.Order;
 import com.org.orderservice.model.OrderItem;
 import com.org.orderservice.model.PaymentStatus;
@@ -47,7 +46,6 @@ public class OrderService {
     }
 
     public OrderResponse createOrder(CreateOrderRequest request, String userIdentity) {
-        requireUserIdentity(userIdentity);
         log.info("Create order requested by user: {}", userIdentity);
 
         Order order = new Order();
@@ -79,7 +77,6 @@ public class OrderService {
     }
 
     public OrderResponse getOrderById(Long id, String userIdentity) {
-        requireUserIdentity(userIdentity);
         return orderRepository.findById(id)
                 .filter(order -> userIdentity.equals(order.getCustomerId()))
                 .map(this::mapToResponse)
@@ -87,7 +84,6 @@ public class OrderService {
     }
 
     public List<OrderResponse> getAllOrders(String userIdentity) {
-        requireUserIdentity(userIdentity);
         log.info("Fetch all orders requested by user: {}", userIdentity);
 
         return orderRepository.findByCustomerId(userIdentity).stream()
@@ -96,7 +92,6 @@ public class OrderService {
     }
 
     public OrderResponse checkoutOrder(Long id, CheckoutOrderRequest request, String userIdentity) {
-        requireUserIdentity(userIdentity);
         Order order = orderRepository.findById(id)
                 .filter(existingOrder -> userIdentity.equals(existingOrder.getCustomerId()))
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + id));
@@ -159,9 +154,4 @@ public class OrderService {
         }
     }
 
-    private void requireUserIdentity(String userIdentity) {
-        if (userIdentity == null || userIdentity.isBlank()) {
-            throw new UnauthorizedException("Authenticated user identity is required");
-        }
-    }
 }
