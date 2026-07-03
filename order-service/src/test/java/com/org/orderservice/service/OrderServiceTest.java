@@ -5,6 +5,7 @@ import com.org.orderservice.client.dto.ProductClientResponse;
 import com.org.orderservice.dto.CreateOrderRequest;
 import com.org.orderservice.dto.OrderItemRequest;
 import com.org.orderservice.exception.OrderNotFoundException;
+import com.org.orderservice.exception.UnauthorizedException;
 import com.org.orderservice.model.Order;
 import com.org.orderservice.model.PaymentStatus;
 import com.org.orderservice.security.UserIdentityResolver;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -97,6 +99,20 @@ class OrderServiceTest {
         assertEquals(BigDecimal.valueOf(99.99), response.getItems().get(0).getUnitPrice());
         assertEquals(BigDecimal.valueOf(199.98), response.getTotalAmount());
         assertEquals(PaymentStatus.PENDING, response.getPaymentStatus());
+    }
+
+    @Test
+    void createOrderThrowsUnauthorizedWhenUserIsNotAuthenticated() {
+        when(userIdentityResolver.resolveUserIdentity()).thenReturn("unknown");
+
+        CreateOrderRequest request = new CreateOrderRequest();
+        OrderItemRequest itemRequest = new OrderItemRequest();
+        itemRequest.setProductId(1L);
+        itemRequest.setQuantity(1);
+        request.setItems(List.of(itemRequest));
+
+        assertThrows(UnauthorizedException.class, () -> orderService.createOrder(request));
+        verify(orderRepository, never()).save(any(Order.class));
     }
 
     @Test

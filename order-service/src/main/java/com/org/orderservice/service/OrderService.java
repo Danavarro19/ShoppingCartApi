@@ -8,6 +8,7 @@ import com.org.orderservice.dto.OrderItemResponse;
 import com.org.orderservice.exception.OrderNotFoundException;
 import com.org.orderservice.exception.ProductNotFoundException;
 import com.org.orderservice.exception.ProductServiceUnavailableException;
+import com.org.orderservice.exception.UnauthorizedException;
 import com.org.orderservice.model.Order;
 import com.org.orderservice.model.OrderItem;
 import com.org.orderservice.model.PaymentStatus;
@@ -42,6 +43,9 @@ public class OrderService {
 
     public OrderResponse createOrder(CreateOrderRequest request) {
         String userIdentity = userIdentityResolver.resolveUserIdentity();
+        if (userIdentity == null || userIdentity.isBlank() || "unknown".equalsIgnoreCase(userIdentity)) {
+            throw new UnauthorizedException("Authentication token is required to create order");
+        }
         log.info("Create order requested by user: {}", userIdentity);
 
         Order order = new Order();
