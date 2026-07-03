@@ -34,4 +34,9 @@ public class OrderController {
     public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
+
+    @PostMapping("/{id}/checkout")
+    public ResponseEntity<OrderResponse> checkoutOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.checkoutOrder(id));
+    }
 }

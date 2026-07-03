@@ -41,6 +41,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
     }
 
+    @ExceptionHandler(PaymentServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentServiceUnavailableException(PaymentServiceUnavailableException ex) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(HttpStatus.SERVICE_UNAVAILABLE.value());
+        errorResponse.setError(HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase());
+        errorResponse.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
+    }
+
+    @ExceptionHandler(OrderCheckoutConflictException.class)
+    public ResponseEntity<ErrorResponse> handleOrderCheckoutConflictException(OrderCheckoutConflictException ex) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(HttpStatus.CONFLICT.value());
+        errorResponse.setError(HttpStatus.CONFLICT.getReasonPhrase());
+        errorResponse.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex) {
         ErrorResponse errorResponse = new ErrorResponse();

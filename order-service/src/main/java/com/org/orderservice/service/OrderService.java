@@ -1,11 +1,16 @@
 package com.org.orderservice.service;
 
 import com.org.orderservice.client.ProductClient;
+import com.org.orderservice.client.PaymentClient;
+import com.org.orderservice.client.dto.PaymentClientRequest;
+import com.org.orderservice.client.dto.PaymentClientResponse;
 import com.org.orderservice.client.dto.ProductClientResponse;
 import com.org.orderservice.dto.CreateOrderRequest;
 import com.org.orderservice.dto.OrderResponse;
 import com.org.orderservice.dto.OrderItemResponse;
+import com.org.orderservice.exception.OrderCheckoutConflictException;
 import com.org.orderservice.exception.OrderNotFoundException;
+import com.org.orderservice.exception.PaymentServiceUnavailableException;
 import com.org.orderservice.exception.ProductNotFoundException;
 import com.org.orderservice.exception.ProductServiceUnavailableException;
 import com.org.orderservice.exception.UnauthorizedException;
@@ -30,15 +35,18 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserIdentityResolver userIdentityResolver;
     private final ProductClient productClient;
+    private final PaymentClient paymentClient;
 
     public OrderService(
             OrderRepository orderRepository,
             UserIdentityResolver userIdentityResolver,
-            ProductClient productClient
+            ProductClient productClient,
+            PaymentClient paymentClient
     ) {
         this.orderRepository = orderRepository;
         this.userIdentityResolver = userIdentityResolver;
         this.productClient = productClient;
+        this.paymentClient = paymentClient;
     }
 
     public OrderResponse createOrder(CreateOrderRequest request) {
@@ -93,6 +101,33 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    public OrderResponse checkoutOrder(Long id) {
+        String userIdentity = userIdentityResolver.resolveUserIdentity();
+        Order order = orderRepository.findById(id)
+                .filter(existingOrder -> userIdentity.equals(existingOrder.getCustomerId()))
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + id));
+
+        if (order.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new OrderCheckoutConflictException("Only PENDING orders can be checked out");
+        }
+
+        PaymentClientRequest paymentRequest = new PaymentClientRequest();
+        paymentRequest.setOrderId(String.valueOf(order.getId()));
+        paymentRequest.setAmount(order.getTotalAmount());
+        paymentRequest.setMethod("CREDIT_CARD");
+
+        PaymentClientResponse paymentResponse = processPayment(paymentRequest);
+
+        if ("PAID".equalsIgnoreCase(paymentResponse.getStatus())) {
+            order.setPaymentStatus(PaymentStatus.PAID);
+        } else {
+            order.setPaymentStatus(PaymentStatus.PAYMENT_FAILED);
+        }
+
+        Order savedOrder = orderRepository.save(order);
+        return mapToResponse(savedOrder);
+    }
+
     private OrderResponse mapToResponse(Order order) {
         OrderResponse res = new OrderResponse();
         res.setId(order.getId());
@@ -118,6 +153,14 @@ public class OrderService {
             throw new ProductNotFoundException(productId);
         } catch (FeignException ex) {
             throw new ProductServiceUnavailableException("Unable to fetch product details", ex);
+        }
+    }
+
+    private PaymentClientResponse processPayment(PaymentClientRequest request) {
+        try {
+            return paymentClient.processPayment(request);
+        } catch (FeignException ex) {
+            throw new PaymentServiceUnavailableException("Unable to process payment", ex);
         }
     }
 }

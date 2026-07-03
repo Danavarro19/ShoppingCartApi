@@ -4,6 +4,8 @@ server:
 external:
   product-service:
     base-url: http://localhost:8081
+  payment-service:
+    base-url: http://localhost:8083
 
 spring:
   application:

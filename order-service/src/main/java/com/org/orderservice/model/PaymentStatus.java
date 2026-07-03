@@ -3,5 +3,5 @@ package com.org.orderservice.model;
 public enum PaymentStatus {
     PENDING,
     PAID,
-    FAILED
+    PAYMENT_FAILED
 }
