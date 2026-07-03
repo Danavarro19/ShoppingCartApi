@@ -52,6 +52,7 @@ public class OrderService {
             item.setProductId(req.getProductId());
             item.setQuantity(req.getQuantity());
             ProductClientResponse product = fetchProductFromProductService(req.getProductId());
+            item.setName(product.getTitle());
             if (product.getPrice() == null) {
                 throw new ProductServiceUnavailableException("Product price is unavailable", null);
             }
@@ -93,6 +94,7 @@ public class OrderService {
         res.setItems(order.getItems().stream().map(i -> {
             OrderItemResponse r = new OrderItemResponse();
             r.setProductId(i.getProductId());
+            r.setName(i.getName());
             r.setQuantity(i.getQuantity());
             r.setUnitPrice(i.getUnitPrice());
             return r;
