@@ -107,8 +107,9 @@ public class OrderService {
                 .filter(existingOrder -> userIdentity.equals(existingOrder.getCustomerId()))
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + id));
 
-        if (order.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new OrderCheckoutConflictException("Only PENDING orders can be checked out");
+        if (order.getPaymentStatus() != PaymentStatus.PENDING
+                && order.getPaymentStatus() != PaymentStatus.PAYMENT_FAILED) {
+            throw new OrderCheckoutConflictException("Only PENDING or PAYMENT_FAILED orders can be checked out");
         }
 
         PaymentClientRequest paymentRequest = new PaymentClientRequest();

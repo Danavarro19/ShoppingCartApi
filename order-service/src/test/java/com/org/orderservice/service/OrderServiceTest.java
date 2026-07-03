@@ -203,7 +203,31 @@ class OrderServiceTest {
     }
 
     @Test
-    void checkoutOrderThrowsConflictWhenOrderIsNotPending() {
+    void checkoutOrderAllowsRetryWhenOrderIsPaymentFailed() {
+        Order order = new Order();
+        order.setId(18L);
+        order.setCustomerId("alice@example.com");
+        order.setCreatedAt(LocalDateTime.of(2026, 7, 3, 10, 0));
+        order.setItems(List.of());
+        order.setTotalAmount(BigDecimal.valueOf(45.00));
+        order.setPaymentStatus(PaymentStatus.PAYMENT_FAILED);
+
+        PaymentClientResponse paymentResponse = new PaymentClientResponse();
+        paymentResponse.setOrderId("18");
+        paymentResponse.setStatus("PAID");
+
+        when(orderRepository.findById(18L)).thenReturn(Optional.of(order));
+        when(paymentClient.processPayment(any())).thenReturn(paymentResponse);
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = orderService.checkoutOrder(18L);
+
+        assertEquals(PaymentStatus.PAID, response.getPaymentStatus());
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    void checkoutOrderThrowsConflictWhenOrderIsNotPendingOrPaymentFailed() {
         Order order = new Order();
         order.setId(15L);
         order.setCustomerId("alice@example.com");
