@@ -73,7 +73,9 @@ public class OrderService {
     }
 
     public OrderResponse getOrderById(Long id) {
+        String userIdentity = userIdentityResolver.resolveUserIdentity();
         return orderRepository.findById(id)
+                .filter(order -> userIdentity.equals(order.getCustomerId()))
                 .map(this::mapToResponse)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + id));
     }

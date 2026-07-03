@@ -4,6 +4,7 @@ import com.org.orderservice.client.ProductClient;
 import com.org.orderservice.client.dto.ProductClientResponse;
 import com.org.orderservice.dto.CreateOrderRequest;
 import com.org.orderservice.dto.OrderItemRequest;
+import com.org.orderservice.exception.OrderNotFoundException;
 import com.org.orderservice.model.Order;
 import com.org.orderservice.model.PaymentStatus;
 import com.org.orderservice.security.UserIdentityResolver;
@@ -18,8 +19,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -94,5 +97,35 @@ class OrderServiceTest {
         assertEquals(BigDecimal.valueOf(99.99), response.getItems().get(0).getUnitPrice());
         assertEquals(BigDecimal.valueOf(199.98), response.getTotalAmount());
         assertEquals(PaymentStatus.PENDING, response.getPaymentStatus());
+    }
+
+    @Test
+    void getOrderByIdReturnsOrderWhenItBelongsToAuthenticatedUser() {
+        Order order = new Order();
+        order.setId(11L);
+        order.setCustomerId("alice@example.com");
+        order.setCreatedAt(LocalDateTime.of(2026, 7, 3, 9, 0));
+        order.setItems(List.of());
+        order.setTotalAmount(BigDecimal.valueOf(50.00));
+        order.setPaymentStatus(PaymentStatus.PENDING);
+
+        when(orderRepository.findById(11L)).thenReturn(Optional.of(order));
+
+        var response = orderService.getOrderById(11L);
+
+        assertEquals(11L, response.getId());
+        assertEquals("alice@example.com", response.getCustomerId());
+        assertEquals(PaymentStatus.PENDING, response.getPaymentStatus());
+    }
+
+    @Test
+    void getOrderByIdThrowsNotFoundWhenOrderBelongsToDifferentUser() {
+        Order order = new Order();
+        order.setId(12L);
+        order.setCustomerId("bob@example.com");
+
+        when(orderRepository.findById(12L)).thenReturn(Optional.of(order));
+
+        assertThrows(OrderNotFoundException.class, () -> orderService.getOrderById(12L));
     }
 }
