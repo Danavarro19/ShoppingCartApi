@@ -76,25 +76,12 @@ public class OrderService {
     }
 
     public List<OrderResponse> getAllOrders() {
-        return List.of(
-                createHardcodedOrder(
-                        1L,
-                        "customer-1001",
-                        LocalDateTime.of(2026, 7, 1, 9, 15),
-                        List.of(
-                                createItem(101L, 2, BigDecimal.valueOf(9.99)),
-                                createItem(102L, 1, BigDecimal.valueOf(14.99))
-                        ),
-                        BigDecimal.valueOf(34.97)
-                ),
-                createHardcodedOrder(
-                        2L,
-                        "customer-1002",
-                        LocalDateTime.of(2026, 7, 2, 14, 30),
-                        List.of(createItem(103L, 3, BigDecimal.valueOf(7.50))),
-                        BigDecimal.valueOf(22.50)
-                )
-        );
+        String userIdentity = userIdentityResolver.resolveUserIdentity();
+        log.info("Fetch all orders requested by user: {}", userIdentity);
+
+        return orderRepository.findByCustomerId(userIdentity).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     private OrderResponse mapToResponse(Order order) {
@@ -111,25 +98,6 @@ public class OrderService {
             return r;
         }).collect(Collectors.toList()));
         return res;
-    }
-
-    private OrderResponse createHardcodedOrder(Long id, String customerId, LocalDateTime createdAt,
-                                               List<OrderItemResponse> items, BigDecimal totalAmount) {
-        OrderResponse response = new OrderResponse();
-        response.setId(id);
-        response.setCustomerId(customerId);
-        response.setCreatedAt(createdAt);
-        response.setItems(items);
-        response.setTotalAmount(totalAmount);
-        return response;
-    }
-
-    private OrderItemResponse createItem(Long productId, Integer quantity, BigDecimal unitPrice) {
-        OrderItemResponse item = new OrderItemResponse();
-        item.setProductId(productId);
-        item.setQuantity(quantity);
-        item.setUnitPrice(unitPrice);
-        return item;
     }
 
     private ProductClientResponse fetchProductFromProductService(Long productId) {
