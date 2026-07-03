@@ -1,0 +1,6 @@
+rootProject.name = 'ShoppingCartApi'
+
+include 'auth-service'
+include 'order-service'
+include 'payment-service'
+include 'product-service'
