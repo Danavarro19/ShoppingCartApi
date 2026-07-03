@@ -1,5 +1,6 @@
 package com.org.orderservice.controller;
 
+import com.org.orderservice.dto.CheckoutOrderRequest;
 import com.org.orderservice.dto.CreateOrderRequest;
 import com.org.orderservice.dto.OrderResponse;
 import com.org.orderservice.service.OrderService;
@@ -36,7 +37,8 @@ public class OrderController {
     }
 
     @PostMapping("/{id}/checkout")
-    public ResponseEntity<OrderResponse> checkoutOrder(@PathVariable Long id) {
-        return ResponseEntity.ok(orderService.checkoutOrder(id));
+    public ResponseEntity<OrderResponse> checkoutOrder(@PathVariable Long id,
+                                                       @RequestBody @Valid CheckoutOrderRequest request) {
+        return ResponseEntity.ok(orderService.checkoutOrder(id, request));
     }
 }

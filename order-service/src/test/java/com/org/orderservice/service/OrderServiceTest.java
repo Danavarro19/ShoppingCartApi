@@ -1,9 +1,11 @@
 package com.org.orderservice.service;
 
 import com.org.orderservice.client.PaymentClient;
+import com.org.orderservice.client.dto.PaymentClientRequest;
 import com.org.orderservice.client.dto.PaymentClientResponse;
 import com.org.orderservice.client.ProductClient;
 import com.org.orderservice.client.dto.ProductClientResponse;
+import com.org.orderservice.dto.CheckoutOrderRequest;
 import com.org.orderservice.dto.CreateOrderRequest;
 import com.org.orderservice.dto.OrderItemRequest;
 import com.org.orderservice.exception.OrderCheckoutConflictException;
@@ -11,6 +13,7 @@ import com.org.orderservice.exception.OrderNotFoundException;
 import com.org.orderservice.exception.PaymentServiceUnavailableException;
 import com.org.orderservice.exception.UnauthorizedException;
 import com.org.orderservice.model.Order;
+import com.org.orderservice.model.PaymentMethod;
 import com.org.orderservice.model.PaymentStatus;
 import com.org.orderservice.security.UserIdentityResolver;
 import com.org.orderservice.repository.OrderRepository;
@@ -18,6 +21,7 @@ import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -172,9 +176,12 @@ class OrderServiceTest {
         when(paymentClient.processPayment(any())).thenReturn(paymentResponse);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        var response = orderService.checkoutOrder(13L);
+        var response = orderService.checkoutOrder(13L, checkoutRequest(PaymentMethod.CREDIT_CARD));
 
         assertEquals(PaymentStatus.PAID, response.getPaymentStatus());
+        ArgumentCaptor<PaymentClientRequest> requestCaptor = ArgumentCaptor.forClass(PaymentClientRequest.class);
+        verify(paymentClient).processPayment(requestCaptor.capture());
+        assertEquals(PaymentMethod.CREDIT_CARD.name(), requestCaptor.getValue().getMethod());
         verify(orderRepository).save(order);
     }
 
@@ -196,7 +203,7 @@ class OrderServiceTest {
         when(paymentClient.processPayment(any())).thenReturn(paymentResponse);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        var response = orderService.checkoutOrder(14L);
+        var response = orderService.checkoutOrder(14L, checkoutRequest(PaymentMethod.CREDIT_CARD));
 
         assertEquals(PaymentStatus.PAYMENT_FAILED, response.getPaymentStatus());
         verify(orderRepository).save(order);
@@ -220,7 +227,7 @@ class OrderServiceTest {
         when(paymentClient.processPayment(any())).thenReturn(paymentResponse);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        var response = orderService.checkoutOrder(18L);
+        var response = orderService.checkoutOrder(18L, checkoutRequest(PaymentMethod.PAYPAL));
 
         assertEquals(PaymentStatus.PAID, response.getPaymentStatus());
         verify(orderRepository).save(order);
@@ -235,7 +242,8 @@ class OrderServiceTest {
 
         when(orderRepository.findById(15L)).thenReturn(Optional.of(order));
 
-        assertThrows(OrderCheckoutConflictException.class, () -> orderService.checkoutOrder(15L));
+        assertThrows(OrderCheckoutConflictException.class,
+                () -> orderService.checkoutOrder(15L, checkoutRequest(PaymentMethod.CREDIT_CARD)));
         verify(paymentClient, never()).processPayment(any());
         verify(orderRepository, never()).save(any(Order.class));
     }
@@ -244,7 +252,8 @@ class OrderServiceTest {
     void checkoutOrderThrowsNotFoundWhenOrderDoesNotExist() {
         when(orderRepository.findById(16L)).thenReturn(Optional.empty());
 
-        assertThrows(OrderNotFoundException.class, () -> orderService.checkoutOrder(16L));
+        assertThrows(OrderNotFoundException.class,
+                () -> orderService.checkoutOrder(16L, checkoutRequest(PaymentMethod.CREDIT_CARD)));
         verify(paymentClient, never()).processPayment(any());
     }
 
@@ -260,7 +269,14 @@ class OrderServiceTest {
         when(orderRepository.findById(17L)).thenReturn(Optional.of(order));
         when(paymentClient.processPayment(any())).thenThrow(mock(FeignException.class));
 
-        assertThrows(PaymentServiceUnavailableException.class, () -> orderService.checkoutOrder(17L));
+        assertThrows(PaymentServiceUnavailableException.class,
+                () -> orderService.checkoutOrder(17L, checkoutRequest(PaymentMethod.CREDIT_CARD)));
         verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    private CheckoutOrderRequest checkoutRequest(PaymentMethod paymentMethod) {
+        CheckoutOrderRequest request = new CheckoutOrderRequest();
+        request.setPaymentMethod(paymentMethod);
+        return request;
     }
 }

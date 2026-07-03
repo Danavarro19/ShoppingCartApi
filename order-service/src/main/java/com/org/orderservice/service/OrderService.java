@@ -5,6 +5,7 @@ import com.org.orderservice.client.PaymentClient;
 import com.org.orderservice.client.dto.PaymentClientRequest;
 import com.org.orderservice.client.dto.PaymentClientResponse;
 import com.org.orderservice.client.dto.ProductClientResponse;
+import com.org.orderservice.dto.CheckoutOrderRequest;
 import com.org.orderservice.dto.CreateOrderRequest;
 import com.org.orderservice.dto.OrderResponse;
 import com.org.orderservice.dto.OrderItemResponse;
@@ -101,7 +102,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    public OrderResponse checkoutOrder(Long id) {
+    public OrderResponse checkoutOrder(Long id, CheckoutOrderRequest request) {
         String userIdentity = userIdentityResolver.resolveUserIdentity();
         Order order = orderRepository.findById(id)
                 .filter(existingOrder -> userIdentity.equals(existingOrder.getCustomerId()))
@@ -115,7 +116,7 @@ public class OrderService {
         PaymentClientRequest paymentRequest = new PaymentClientRequest();
         paymentRequest.setOrderId(String.valueOf(order.getId()));
         paymentRequest.setAmount(order.getTotalAmount());
-        paymentRequest.setMethod("CREDIT_CARD");
+        paymentRequest.setMethod(request.getPaymentMethod().name());
 
         PaymentClientResponse paymentResponse = processPayment(paymentRequest);
 
