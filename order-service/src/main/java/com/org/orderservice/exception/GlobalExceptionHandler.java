@@ -23,6 +23,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleProductNotFoundException(ProductNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setError(HttpStatus.BAD_REQUEST.getReasonPhrase());
+        errorResponse.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(ProductServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleProductServiceUnavailableException(ProductServiceUnavailableException ex) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(HttpStatus.SERVICE_UNAVAILABLE.value());
+        errorResponse.setError(HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase());
+        errorResponse.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();

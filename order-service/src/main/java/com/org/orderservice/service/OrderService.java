@@ -1,14 +1,18 @@
 package com.org.orderservice.service;
 
+import com.org.orderservice.client.ProductClient;
+import com.org.orderservice.client.dto.ProductClientResponse;
 import com.org.orderservice.dto.CreateOrderRequest;
-import com.org.orderservice.dto.OrderItemRequest;
 import com.org.orderservice.dto.OrderResponse;
 import com.org.orderservice.dto.OrderItemResponse;
 import com.org.orderservice.exception.OrderNotFoundException;
+import com.org.orderservice.exception.ProductNotFoundException;
+import com.org.orderservice.exception.ProductServiceUnavailableException;
 import com.org.orderservice.model.Order;
 import com.org.orderservice.model.OrderItem;
 import com.org.orderservice.repository.OrderRepository;
 import com.org.orderservice.security.UserIdentityResolver;
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,10 +27,16 @@ public class OrderService {
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
     private final OrderRepository orderRepository;
     private final UserIdentityResolver userIdentityResolver;
+    private final ProductClient productClient;
 
-    public OrderService(OrderRepository orderRepository, UserIdentityResolver userIdentityResolver) {
+    public OrderService(
+            OrderRepository orderRepository,
+            UserIdentityResolver userIdentityResolver,
+            ProductClient productClient
+    ) {
         this.orderRepository = orderRepository;
         this.userIdentityResolver = userIdentityResolver;
+        this.productClient = productClient;
     }
 
     public OrderResponse createOrder(CreateOrderRequest request) {
@@ -41,7 +51,11 @@ public class OrderService {
             OrderItem item = new OrderItem();
             item.setProductId(req.getProductId());
             item.setQuantity(req.getQuantity());
-            item.setUnitPrice(fetchPriceFromProductService(req.getProductId())); // stub
+            ProductClientResponse product = fetchProductFromProductService(req.getProductId());
+            if (product.getPrice() == null) {
+                throw new ProductServiceUnavailableException("Product price is unavailable", null);
+            }
+            item.setUnitPrice(BigDecimal.valueOf(product.getPrice()));
             item.setOrder(order);
             return item;
         }).collect(Collectors.toList());
@@ -118,7 +132,13 @@ public class OrderService {
         return item;
     }
 
-    private BigDecimal fetchPriceFromProductService(Long productId) {
-        return BigDecimal.valueOf(9.99); // Simulated price fetch
+    private ProductClientResponse fetchProductFromProductService(Long productId) {
+        try {
+            return productClient.getProductById(productId);
+        } catch (FeignException.NotFound ex) {
+            throw new ProductNotFoundException(productId);
+        } catch (FeignException ex) {
+            throw new ProductServiceUnavailableException("Unable to fetch product details", ex);
+        }
     }
 }
