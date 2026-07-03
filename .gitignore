@@ -32,6 +32,7 @@ bin/
 build/
 .gradle
 .gradletasknamecache
+.gradle-local
 gradle-app.setting
 !gradle-wrapper.jar
 
