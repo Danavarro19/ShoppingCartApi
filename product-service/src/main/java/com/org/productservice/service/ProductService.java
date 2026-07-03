@@ -17,13 +17,11 @@ public class ProductService {
         this.client = client;
     }
 
-    @Cacheable("products")
     @Retryable(value = {IOException.class}, maxAttempts = 3)
     public List<ProductDTO> getAllProducts() {
         return client.getAllProducts();
     }
 
-    @Cacheable(value = "product", key = "#id")
     @Retryable(value = {IOException.class}, maxAttempts = 3)
     public ProductDTO getProductById(Long id) {
         try {
@@ -37,13 +35,11 @@ public class ProductService {
         }
     }
 
-    @Cacheable("categories")
     @Retryable(value = {IOException.class}, maxAttempts = 3)
     public List<String> getCategories() {
         return client.getCategories();
     }
 
-    @Cacheable(value = "productsByCategory", key = "#category")
     @Retryable(value = {IOException.class}, maxAttempts = 3)
     public List<ProductDTO> getProductsByCategory(String category) {
         try {
