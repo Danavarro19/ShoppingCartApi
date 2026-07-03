@@ -10,6 +10,7 @@ import com.org.orderservice.exception.ProductNotFoundException;
 import com.org.orderservice.exception.ProductServiceUnavailableException;
 import com.org.orderservice.model.Order;
 import com.org.orderservice.model.OrderItem;
+import com.org.orderservice.model.PaymentStatus;
 import com.org.orderservice.repository.OrderRepository;
 import com.org.orderservice.security.UserIdentityResolver;
 import feign.FeignException;
@@ -46,6 +47,7 @@ public class OrderService {
         Order order = new Order();
         order.setCustomerId(userIdentity);
         order.setCreatedAt(LocalDateTime.now());
+        order.setPaymentStatus(PaymentStatus.PENDING);
 
         List<OrderItem> items = request.getItems().stream().map(req -> {
             OrderItem item = new OrderItem();
@@ -91,6 +93,7 @@ public class OrderService {
         res.setCustomerId(order.getCustomerId());
         res.setCreatedAt(order.getCreatedAt());
         res.setTotalAmount(order.getTotalAmount());
+        res.setPaymentStatus(order.getPaymentStatus());
         res.setItems(order.getItems().stream().map(i -> {
             OrderItemResponse r = new OrderItemResponse();
             r.setProductId(i.getProductId());

@@ -5,6 +5,7 @@ import com.org.orderservice.client.dto.ProductClientResponse;
 import com.org.orderservice.dto.CreateOrderRequest;
 import com.org.orderservice.dto.OrderItemRequest;
 import com.org.orderservice.model.Order;
+import com.org.orderservice.model.PaymentStatus;
 import com.org.orderservice.security.UserIdentityResolver;
 import com.org.orderservice.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,6 +54,7 @@ class OrderServiceTest {
         order.setCreatedAt(LocalDateTime.of(2026, 7, 2, 14, 30));
         order.setItems(List.of());
         order.setTotalAmount(BigDecimal.valueOf(22.50));
+        order.setPaymentStatus(PaymentStatus.PENDING);
         when(orderRepository.findByCustomerId(userIdentity)).thenReturn(List.of(order));
 
         var orders = orderService.getAllOrders();
@@ -60,6 +62,7 @@ class OrderServiceTest {
         assertEquals(1, orders.size());
         assertEquals(userIdentity, orders.get(0).getCustomerId());
         assertEquals(10L, orders.get(0).getId());
+        assertEquals(PaymentStatus.PENDING, orders.get(0).getPaymentStatus());
         verify(orderRepository).findByCustomerId(userIdentity);
     }
 
@@ -90,5 +93,6 @@ class OrderServiceTest {
         assertEquals("Laptop", response.getItems().get(0).getName());
         assertEquals(BigDecimal.valueOf(99.99), response.getItems().get(0).getUnitPrice());
         assertEquals(BigDecimal.valueOf(199.98), response.getTotalAmount());
+        assertEquals(PaymentStatus.PENDING, response.getPaymentStatus());
     }
 }

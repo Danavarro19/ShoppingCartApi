@@ -1,5 +1,6 @@
 package com.org.orderservice.dto;
 
+import com.org.orderservice.model.PaymentStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -12,5 +13,6 @@ public class OrderResponse {
     private String customerId;
     private LocalDateTime createdAt;
     private BigDecimal totalAmount;
+    private PaymentStatus paymentStatus;
     private List<OrderItemResponse> items;
 }

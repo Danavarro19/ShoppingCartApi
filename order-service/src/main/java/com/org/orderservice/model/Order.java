@@ -23,4 +23,8 @@ public class Order {
     private List<OrderItem> items;
 
     private BigDecimal totalAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 }
